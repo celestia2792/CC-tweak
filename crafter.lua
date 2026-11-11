@@ -1,5 +1,6 @@
 local BOX_SIDE = "bottom"
 local CRAFTER_SIDE = "left"
+local CRAFTER_SIZE = "25" --5x5 size
 
 local box = peripheral.wrap(BOX_SIDE)
  
