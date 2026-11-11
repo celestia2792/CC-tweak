@@ -1,5 +1,6 @@
 local BOX_SIDE = "bottom"
 local CRAFTER_SIDE = "left"
+local RETURN_SIDE = "up"
 local CRAFTER_SIZE = "25" --5x5 size
 
 local box = peripheral.wrap(BOX_SIDE)
@@ -16,7 +17,7 @@ local function DoCraft()
     redstone.setOutput(CRAFTER_SIDE, true)
     sleep(1)
     redstone.setOutput(CRAFTER_SIDE, false)
-    box.pushItems(CRAFTER_SIDE, craftSize)
+    box.pushItems(RETURN_SIDE, craftSize)
     sleep(5)
 end
  
