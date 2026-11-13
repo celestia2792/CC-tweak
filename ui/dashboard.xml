@@ -1,0 +1,77 @@
+<frame
+    name="app_shell"
+    x="1"
+    y="1"
+    width="{parent.width}"
+    height="{parent.height}"
+>
+    <label
+        x="1"
+        y="1"
+        text="Screen Connection"
+    />
+    <button
+        x="{parent.width - 5}"
+        y="1"
+        width="6"
+        height="1"
+        background="{colors.red}"
+        text="Exit"
+        onClick="exit"
+    />
+    <list
+        name="connection_list"
+        x="2"
+        y="4"
+        width="{parent.width/2}"
+        height="{parent.height - 4}"
+        emptyText="No connections"
+        scrollbar="auto"
+    />
+    <frame
+        x="{parent.width/2 + 3}"
+        y="4"
+        width="{parent.width/2 - 4}"
+        height="{parent.height - 4}"
+    >
+        <label
+            x="1"
+            y="1"
+            text="New Connection Info"
+        />
+        <dropdown
+            name="monitor_dropdown"
+            x="1"
+            y="3"
+            width="{parent.width - 1}"
+            text="Select Monitor"
+            background="{colors.black}"
+            dropBackground="{colors.black}"
+        />
+        <dropdown
+            name="program_dropdown"
+            x="1"
+            y="5"
+            width="{parent.width - 1}"
+            text="Select Program"
+            background="{colors.black}"
+            dropBackground="{colors.black}"
+        />
+        <button
+            x="1"
+            y="{parent.height - 1}"
+            width="9"
+            height="1"
+            background="{colors.green}"
+            text="Add New"
+        />
+        <button
+            x="12"
+            y="{parent.height - 1}"
+            width="8"
+            height="1"
+            background="{colors.red}"
+            text="Remove"
+        />
+    </frame>
+</frame>
