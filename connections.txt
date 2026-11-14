@@ -1,0 +1,18 @@
+{
+  {
+    monitor = "monitor_3",
+    program = "example_1.lua",
+    isRunning = true,
+    fg = 8192,
+    text = "example_1.lua->monitor_3",
+    error = "Running...",
+  },
+  {
+    monitor = "no_monitor",
+    program = "gyro.lua",
+    isRunning = true,
+    fg = 8192,
+    text = "gyro.lua->no_monitor",
+    error = "Running...",
+  },
+}

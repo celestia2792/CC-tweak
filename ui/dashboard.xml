@@ -5,6 +5,13 @@
     width="{parent.width}"
     height="{parent.height}"
 >
+    <dialog
+        name="dialog"
+        boxwidth="32"
+        titleBackground="{colors.blue}"
+        boxBackground="{colors.lightGray}"
+        boxForeground="{colors.black}"
+    />
     <label
         x="1"
         y="1"
@@ -59,19 +66,47 @@
         />
         <button
             x="1"
-            y="{parent.height - 1}"
-            width="9"
+            y="7"
+            width="4"
             height="1"
             background="{colors.green}"
-            text="Add New"
+            text="Add"
+            onClick="addNewConnection"
         />
         <button
-            x="12"
-            y="{parent.height - 1}"
+            x="6"
+            y="7"
             width="8"
             height="1"
             background="{colors.red}"
             text="Remove"
+            onClick="removeConnection"
+        />
+        <button
+            x="1"
+            y="9"
+            width="4"
+            height="1"
+            background="{colors.green}"
+            text="Run"
+            onClick="runBtnPressed"
+        />
+        <button
+            x="6"
+            y="9"
+            width="8"
+            height="1"
+            background="{colors.red}"
+            text="Stop"
+            onClick="stopBtnPressed"
+        />
+        <label
+            name="outUnit"
+            x="1"
+            y="11"
+            width="{parent.width - 1}"
+            height="5"
+            background="{colors.black}"
         />
     </frame>
 </frame>
