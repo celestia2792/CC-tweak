@@ -12,7 +12,7 @@ local function saveConfigs()
 end
 
 local function loadConfigs()
-    local file = fs.open(fs.combine(shell.dir(), "configs_panel.txt"), "w")
+    local file = fs.open(fs.combine(shell.dir(), "configs_panel.txt"), "r")
     configs = textutils.unserialise(file.readAll())
     file.close()
 end
