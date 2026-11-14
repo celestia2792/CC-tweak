@@ -1,0 +1,30 @@
+<frame
+    name="app_shell"
+    x="1"
+    y="1"
+    width="{parent.width}"
+    height="{parent.height}"
+>
+    <dialog
+        name="dialog"
+        boxwidth="32"
+        titleBackground="{colors.blue}"
+        boxBackground="{colors.lightGray}"
+        boxForeground="{colors.black}"
+    />
+    <label
+        x="2"
+        y="1"
+        text="AIRSHIP CONTROL PANEL"
+        foreground="{colors.lightBlue}"
+    />
+    <button
+        x="{parents.witdh-6}"
+        y="1"
+        width="6"
+        height="1"
+        text="Exit"
+        backgroun="{colors.red}"
+        onClick="exit"
+    />
+</frame>

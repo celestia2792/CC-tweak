@@ -140,6 +140,9 @@ end
 
 local function loadFile()
     local file = fs.open(fs.combine(shell.dir(), "connections.txt"), "r")
+    if not file then
+        return
+    end
     connectionList = textutils.unserialise(file.readAll())
     file.close()
     connection_list.items=connectionList
