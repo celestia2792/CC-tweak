@@ -10,7 +10,17 @@
   {
     monitor = "no_monitor",
     program = "gyro.lua",
-    isRunning = false,
+    isRunning = true,
+    fg = 8192,
     text = "gyro.lua->no_monitor",
+    error = "Running...",
+  },
+  {
+    monitor = "monitor_6",
+    program = "controlpanel.lua",
+    isRunning = true,
+    fg = 8192,
+    text = "controlpanel.lua->monitor_6",
+    error = "Running...",
   },
 }

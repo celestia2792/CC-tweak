@@ -1,0 +1,22 @@
+{
+  fuelTanks = {
+    "create:fluid_tank_2",
+    "create:fluid_tank_3",
+    "create:fluid_tank_4",
+    "create:fluid_tank_5",
+    "create:fluid_tank_6",
+    "create:fluid_tank_7",
+    "create:fluid_tank_8",
+    "create:fluid_tank_9",
+  },
+  engineRelays = {
+    "redstone_relay_1",
+    "redstone_relay_3",
+    "redstone_relay_4",
+    "redstone_relay_2",
+  },
+  stressometer = {
+    "Create_Stressometer_0",
+  },
+  manualControl = false,
+}

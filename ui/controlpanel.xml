@@ -4,6 +4,7 @@
     y="1"
     width="{parent.width}"
     height="{parent.height}"
+    background="{colors.black}"
 >
     <dialog
         name="dialog"
@@ -19,12 +20,165 @@
         foreground="{colors.lightBlue}"
     />
     <button
-        x="{parents.witdh-6}"
+        x="{parent.width - 7}"
         y="1"
         width="6"
         height="1"
         text="Exit"
-        backgroun="{colors.red}"
+        background="{colors.red}"
         onClick="exit"
     />
+    <tabControl
+        name="tabCtl"
+        x="1"
+        y="2"
+        width="{parent.width}"
+        height="{parent.height - 1}"
+        activeBackground="{colors.lightBlue}"
+    >
+        <frame
+            name="Overview"
+            x="1"
+            y="2"
+            width="{parent.width}"
+            height="{parent.height - 1}"
+            background="{colors.black}"
+        >
+            <label
+                x="2"
+                y="2"
+                text="Kinetic Stress (su)"
+                foreground="{colors.lightBlue}"
+            />
+            <label
+                name="stressValue"
+                x="2"
+                y="3"
+                width="{parent.width / 2 - 3}"
+                height="1"
+            />
+            <label
+                x="2"
+                y="5"
+                text="Fuel"
+                foreground="{colors.lightBlue}"
+            />
+            <progressBar
+                name="fuelProgress"
+                x="2"
+                y="6"
+                width="{parent.width / 2 - 3}"
+                height="1"
+                progress="0"
+                showPercentage="true"
+                background="{colors.gray}"
+                barColor="{colors.green}"
+            />
+            <label
+                name="fuelAmount"
+                x="2"
+                y="7"
+                width="{parent.width / 2 - 3}"
+                height="1"
+            />
+            <label
+                x="{parent.width / 2 + 1}"
+                y="2"
+                text="Engines"
+                foreground="{colors.lightBlue}"
+            />
+            <label
+                x="{parent.width / 2 + 1}"
+                y="3"
+                text="Manual Control"
+                foreground="{colors.white}"
+            />
+            <switch
+                name="manualControl"
+                x="{parent.width - 6}"
+                y="3"
+                width="4"
+                height="1"
+            />
+            <frame
+                name="engineControls"
+                x="{parent.width / 2 + 1}"
+                y="4"
+                width="{parent.width / 2 - 2}"
+                height="{parent.height - 5}"
+                background="{colors.black}"
+            />
+        </frame>
+        <frame
+            name="Setting"
+            x="1"
+            y="2"
+            width="{parent.width}"
+            height="{parent.height - 1}"
+            background="{colors.black}"
+        >
+            <label
+                text="Config List"
+                x="{parent.width / 2 + 3}"
+                y="2"
+                foreground="{colors.lightBlue}"
+            />
+            <dropdown
+                name="configSelection"
+                x="{parent.width / 2 + 3}"
+                width="{parent.width / 2 - 3}"
+                y="3"
+                onSelect="printConfig"
+            />
+            <list
+                name="configList"
+                x="{parent.width / 2 + 3}"
+                y="5"
+                width="{parent.width / 2 - 2}"
+                height="{parent.height - 7}"
+                background="{colors.lightGray}"
+            />
+            <button
+                x="{parent.width / 2 + 3}"
+                y="{parent.height - 1}"
+                height="1"
+                width="5"
+                text="Add"
+                background="{colors.green}"
+                onClick="addConfig"
+            />
+            <button
+                x="{parent.width / 2 + 9}"
+                y="{parent.height - 1}"
+                height="1"
+                width="8"
+                text="Remove"
+                background="{colors.red}"
+                onClick="removeConfig"
+            />
+            <label
+                text="Peripheral List"
+                x="2"
+                y="2"
+                foreground="{colors.lightBlue}"
+            />
+            <list
+                name="peripheralList"
+                x="2"
+                y="3"
+                width="{parent.width / 2}"
+                height="{parent.height - 5}"
+                background="{colors.lightGray}"
+            />
+            <button
+                x="2"
+                y="{parent.height - 1}"
+                height="1"
+                width="6"
+                text="Save"
+                background="{colors.green}"
+                onClick="saveConfigs"
+            />
+        </frame>
+    </tabControl>
 </frame>
