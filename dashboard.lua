@@ -10,6 +10,19 @@ local noMonitorPrograms = {}
 
 local scope = {}
 
+local function createProgramEnvironment(programPath)
+    local programDirectory = fs.getDir(programPath)
+    local programShell = setmetatable({
+        dir = function()
+            return programDirectory
+        end,
+        getRunningProgram = function()
+            return programPath
+        end,
+    }, { __index = shell })
+    return { shell = programShell }
+end
+
 local function saveFile()
     local file = fs.open(fs.combine(shell.dir(), "connections.txt"), "w")
     file.write(textutils.serialise(connectionList))
@@ -21,10 +34,11 @@ function scope.addNewConnection()
     local selectedMonitor = monitorDropdown:getSelectedItem()
     local selectedProgram = programDropdown:getSelectedItem()
     if selectedMonitor and selectedProgram then
+        local programPath = selectedProgram.value or selectedProgram.text
         connectionList[#connectionList+1] = {
             monitor = selectedMonitor.text,
-            program = selectedProgram.text,
-            text = selectedProgram.text .. "->" .. selectedMonitor.text,
+            program = programPath,
+            text = fs.getName(programPath) .. "->" .. selectedMonitor.text,
             isRunning = false
         }
         saveFile()
@@ -41,21 +55,27 @@ local function startNoMonitorConnection(connection)
     end
 
     connection.error = nil
+    local programPath = fs.combine(shell.dir(), connection.program)
+    local environment = setmetatable(createProgramEnvironment(programPath), {
+        __index = _ENV,
+    })
+    local program, loadError = loadfile(programPath, nil, environment)
+    if not program then
+        error(loadError)
+    end
+
     process = basalt.schedule(function()
-        local programPath = "/" .. fs.combine(shell.dir(), connection.program)
-        local ok, result = pcall(shell.execute, programPath)
+        local ok, result = pcall(program)
         local message
         if not ok then
             message = tostring(result)
-        elseif not result then
-            message = "Program exited with an error"
         else
             message = "Finished"
         end
 
         connection.isRunning = false
         connection.error = message
-        if ok and result then
+        if ok then
             connection.fg = nil
         else
             connection.fg = colors.red
@@ -128,7 +148,9 @@ local function startConnection(connection)
     end
     connection.error = nil
     monitorConnections[connection.monitor] = connection
-    runner:execute(fs.combine(shell.dir(), connection.program))
+    local programPath = fs.combine(shell.dir(), connection.program)
+    runner.env = createProgramEnvironment(programPath)
+    runner:execute(programPath)
     if connection.error and connection.error ~= "Finished" then
         return false
     end
@@ -258,13 +280,35 @@ local monitorNames = peripheral.getNames()
 monitorNames[#monitorNames + 1] = "no_monitor"
 monitorDropdown.items = tableToItems(monitorNames)
 programDropdown = appShell:find("program_dropdown")
-local programs = fs.list(shell.dir())
-for index = #programs, 1, -1 do
-    if programs[index] == "dashboard.lua" or programs[index] == "dashboard" then
-        table.remove(programs, index)
+local programs = {}
+local function addProgramEntries(directory, relativeDirectory, depth)
+    for _, name in ipairs(fs.list(directory)) do
+        if name ~= ".git" then
+            local fullPath = fs.combine(directory, name)
+            local relativePath = relativeDirectory == ""
+                and name
+                or fs.combine(relativeDirectory, name)
+            if fs.isDir(fullPath) then
+                local firstChildIndex = #programs + 1
+                addProgramEntries(fullPath, relativePath, depth + 1)
+                if #programs >= firstChildIndex then
+                    table.insert(programs, firstChildIndex, {
+                        text = string.rep("  ", depth) .. name .. "/",
+                        selectable = false,
+                    })
+                end
+            elseif name:lower():match("%.lua$")
+                and not (depth == 0 and name:lower() == "dashboard.lua") then
+                programs[#programs + 1] = {
+                    text = string.rep("  ", depth) .. name,
+                    value = relativePath,
+                }
+            end
+        end
     end
 end
-programDropdown.items = tableToItems(programs)
+addProgramEntries(shell.dir(), "", 0)
+programDropdown.items = programs
 connection_list = appShell:find("connection_list")
 connection_list:onChange(function (_,index,item)
     if item then

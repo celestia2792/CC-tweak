@@ -380,4 +380,20 @@ basalt.schedule(function()
     end
 end)
 
+basalt.schedule(function()
+    while true do
+        if peripheralList.parent.visible then
+            local scrollInfo = peripheralList:getScrollInfo()
+            if scrollInfo.maximum > 0 then
+                local nextOffset = peripheralList.offset + 1
+                if nextOffset > scrollInfo.maximum then
+                    nextOffset = 0
+                end
+                peripheralList:setOffset(nextOffset)
+            end
+        end
+        sleep(5)
+    end
+end)
+
 basalt.run()
