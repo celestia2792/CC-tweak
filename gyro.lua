@@ -6,7 +6,8 @@ local relay = assert(peripheral.wrap("redstone_relay_5"), "redstone_relay_5 not 
 
 local UPDATE_INTERVAL = 0.05
 local KP = 0.04
-local KI = 0.01
+local REFERENCE_KI = 0.01
+local REFERENCE_PRESSURE = 0.4091
 local KD = 0.5
 local INTEGRAL_LIMIT = 40
 local sides = { ENGINE_1, ENGINE_2, ENGINE_3, ENGINE_4 }
@@ -16,7 +17,16 @@ local function clamp(value, minimum, maximum)
     return math.max(minimum, math.min(maximum, value))
 end
 
-local function pid(angle, angularVelocity, integral, dt, integrate)
+local function pid(
+    angle,
+    angularVelocity,
+    integral,
+    dt,
+    integrate,
+    kp,
+    ki,
+    kd
+)
     local error = -angle
     local nextIntegral = integral
     if integrate then
@@ -27,8 +37,17 @@ local function pid(angle, angularVelocity, integral, dt, integrate)
         )
     end
 
-    local control = KP * error + KI * nextIntegral - KD * angularVelocity
+    local control = kp * error + ki * nextIntegral - kd * angularVelocity
     return control, nextIntegral, error
+end
+
+local function getCurrentGains()
+    local pressure = aero.getAirPressure(sublevel.getLastPose().position)
+    if type(pressure) ~= "number" or pressure <= 0 then
+        error("Aero returned an invalid air pressure")
+    end
+    local scale = REFERENCE_PRESSURE / pressure
+    return KP * scale, REFERENCE_KI * scale, KD * scale
 end
 
 local function readAttitudeAndRates()
@@ -85,19 +104,56 @@ assert(sublevel.isInPlotGrid(), "This computer is not on a Sable sublevel")
 local ok, err = pcall(function()
     while true do
         local pitch, roll, pitchRate, rollRate = readAttitudeAndRates()
+        local kp, ki, kd = getCurrentGains()
         local pitchControl, nextPitchIntegral, pitchError =
-            pid(pitch, pitchRate, pitchIntegral, UPDATE_INTERVAL, true)
+            pid(
+                pitch,
+                pitchRate,
+                pitchIntegral,
+                UPDATE_INTERVAL,
+                true,
+                kp,
+                ki,
+                kd
+            )
         local rollControl, nextRollIntegral, rollError =
-            pid(roll, rollRate, rollIntegral, UPDATE_INTERVAL, true)
+            pid(
+                roll,
+                rollRate,
+                rollIntegral,
+                UPDATE_INTERVAL,
+                true,
+                kp,
+                ki,
+                kd
+            )
 
         if math.abs(pitchControl) + math.abs(rollControl) > 1 then
             if pitchControl * pitchError > 0 then
                 pitchControl, nextPitchIntegral =
-                    pid(pitch, pitchRate, pitchIntegral, UPDATE_INTERVAL, false)
+                    pid(
+                        pitch,
+                        pitchRate,
+                        pitchIntegral,
+                        UPDATE_INTERVAL,
+                        false,
+                        kp,
+                        ki,
+                        kd
+                    )
             end
             if rollControl * rollError > 0 then
                 rollControl, nextRollIntegral =
-                    pid(roll, rollRate, rollIntegral, UPDATE_INTERVAL, false)
+                    pid(
+                        roll,
+                        rollRate,
+                        rollIntegral,
+                        UPDATE_INTERVAL,
+                        false,
+                        kp,
+                        ki,
+                        kd
+                    )
             end
         end
 
