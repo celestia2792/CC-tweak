@@ -141,32 +141,90 @@ local function saveConfig(config)
     return true
 end
 
-if monitor then
-    local terminal = term.current()
-    monitor.setBackgroundColor(colors.black)
-    monitor.setTextColor(colors.white)
-    monitor.clear()
-    monitor.setCursorPos(1, 1)
-    monitor.setCursorBlink(false)
+local terminal = term.current()
+local monitorAttached = false
 
-    local mirroredTerminal = setmetatable({}, {
-        __index = function(_, method)
-            local terminalMethod = terminal[method]
-            local monitorMethod = monitor[method]
-            if type(terminalMethod) ~= "function" or type(monitorMethod) ~= "function" then
-                return terminalMethod
-            end
+local mirroredTerminal = setmetatable({}, {
+    __index = function(_, method)
+        local terminalMethod = terminal[method]
+        local monitorMethod = monitor and monitor[method]
 
-            return function(...)
-                local results = table.pack(terminalMethod(...))
-                monitorMethod(...)
-                return table.unpack(results, 1, results.n)
+        if method == "getSize" then
+            return function()
+                if monitor then
+                    local ok, width, height = pcall(monitor.getSize)
+                    if ok and width and height then
+                        return width, height
+                    end
+                end
+                return terminal.getSize()
             end
-        end,
-    })
-    terminalRoot:setTerm(mirroredTerminal)
-    terminalRoot.monitor = peripheral.getName(monitor)
+        end
+
+        if method == "isColor" or method == "isColour" then
+            return function()
+                if monitorMethod then
+                    local ok, value = pcall(monitorMethod)
+                    if ok then
+                        return value
+                    end
+                end
+                return terminalMethod()
+            end
+        end
+
+        if type(terminalMethod) ~= "function" then
+            return nil
+        end
+        if type(monitorMethod) ~= "function" then
+            return terminalMethod
+        end
+
+        return function(...)
+            local results = table.pack(terminalMethod(...))
+            pcall(monitorMethod, ...)
+            return table.unpack(results, 1, results.n)
+        end
+    end,
+})
+
+local function attachMonitor()
+    local found = peripheral.find("monitor")
+    if not found then
+        if monitor then
+            monitor = nil
+            terminalRoot:setTerm(terminal)
+            terminalRoot.monitor = nil
+            terminalRoot:markDirty()
+        end
+        monitorAttached = false
+        return false
+    end
+
+    local ok, width, height = pcall(found.getSize)
+    if not ok or not width or not height then
+        return false
+    end
+
+    if monitor ~= found or not monitorAttached then
+        monitor = found
+        pcall(found.setBackgroundColor, colors.black)
+        pcall(found.setTextColor, colors.white)
+        pcall(found.clear)
+        pcall(found.setCursorPos, 1, 1)
+        pcall(found.setCursorBlink, false)
+
+        terminalRoot:setTerm(mirroredTerminal)
+        terminalRoot.monitor = peripheral.getName(found)
+        monitorAttached = true
+        terminalRoot:markDirty()
+        return true
+    end
+
+    return true
 end
+
+attachMonitor()
 
 local config, configError = loadConfig()
 if configError then
@@ -920,6 +978,7 @@ parallel.waitForAny(function()
 end, function()
     while true do
         sleep(0.2)
+        attachMonitor()
         refreshTelemetry()
     end
 end)
