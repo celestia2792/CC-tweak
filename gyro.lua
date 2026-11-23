@@ -18,11 +18,19 @@ local relay = assert(peripheral.wrap("redstone_relay_5"), "redstone_relay_5 not 
 local relay2 = assert(peripheral.wrap("redstone_relay_7"), "redstone_relay_7 not found")
 
 local UPDATE_INTERVAL = 0.05
-local KP = 0.04
-local REFERENCE_KI = 0.01
 local REFERENCE_PRESSURE = 0.4091
-local KD = 0.5
-local INTEGRAL_LIMIT = 40
+local X_PID = {
+    kp = 0.02,
+    ki = 0.01,
+    kd = 0.8,
+    integralLimit = 20,
+}
+local Z_PID = {
+    kp = 0.04,
+    ki = 0.01,
+    kd = 0.5,
+    integralLimit = 40,
+}
 local engines = { ENGINE_1, ENGINE_2, ENGINE_3, ENGINE_4 }
 local xIntegral, zIntegral = 0, 0
 
@@ -37,15 +45,16 @@ local function pid(
     integrate,
     kp,
     ki,
-    kd
+    kd,
+    integralLimit
 )
     local error = -angle
     local nextIntegral = integral
     if integrate then
         nextIntegral = clamp(
             integral + error * UPDATE_INTERVAL,
-            -INTEGRAL_LIMIT,
-            INTEGRAL_LIMIT
+            -integralLimit,
+            integralLimit
         )
     end
 
@@ -53,13 +62,12 @@ local function pid(
     return control, nextIntegral, error
 end
 
-local function getCurrentGains(position)
+local function getPressureScale(position)
     local pressure = aero.getAirPressure(position)
     if type(pressure) ~= "number" or pressure <= 0 then
         error("Aero returned an invalid air pressure")
     end
-    local scale = REFERENCE_PRESSURE / pressure
-    return KP * scale, REFERENCE_KI * scale, KD * scale
+    return REFERENCE_PRESSURE / pressure
 end
 
 local function readAttitudeAndRates(pose)
@@ -187,16 +195,17 @@ local ok, err = pcall(function()
         local pose = sublevel.getLastPose()
         local xAngle, zAngle, xRate, zRate, w, x, y, z =
             readAttitudeAndRates(pose)
-        local kp, ki, kd = getCurrentGains(pose.position)
+        local pressureScale = getPressureScale(pose.position)
         local xControl, nextXIntegral, xError =
             pid(
                 xAngle,
                 xRate,
                 xIntegral,
                 true,
-                kp,
-                ki,
-                kd
+                X_PID.kp * pressureScale,
+                X_PID.ki * pressureScale,
+                X_PID.kd * pressureScale,
+                X_PID.integralLimit
             )
         local zControl, nextZIntegral, zError =
             pid(
@@ -204,9 +213,10 @@ local ok, err = pcall(function()
                 zRate,
                 zIntegral,
                 true,
-                kp,
-                ki,
-                kd
+                Z_PID.kp * pressureScale,
+                Z_PID.ki * pressureScale,
+                Z_PID.kd * pressureScale,
+                Z_PID.integralLimit
             )
 
         if math.abs(xControl) + math.abs(zControl) > 1 then
@@ -217,9 +227,10 @@ local ok, err = pcall(function()
                         xRate,
                         xIntegral,
                         false,
-                        kp,
-                        ki,
-                        kd
+                        X_PID.kp * pressureScale,
+                        X_PID.ki * pressureScale,
+                        X_PID.kd * pressureScale,
+                        X_PID.integralLimit
                     )
             end
             if zControl * zError > 0 then
@@ -229,9 +240,10 @@ local ok, err = pcall(function()
                         zRate,
                         zIntegral,
                         false,
-                        kp,
-                        ki,
-                        kd
+                        Z_PID.kp * pressureScale,
+                        Z_PID.ki * pressureScale,
+                        Z_PID.kd * pressureScale,
+                        Z_PID.integralLimit
                     )
             end
         end
