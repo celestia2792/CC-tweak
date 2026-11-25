@@ -23,7 +23,7 @@ local X_PID = {
     kp = 0.01,
     ki = 0.01,
     kd = 0.5,
-    integralLimit = 20,
+    integralLimit = 15,
 }
 local Z_PID = {
     kp = 0.03,
